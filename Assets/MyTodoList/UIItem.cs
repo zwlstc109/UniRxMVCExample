@@ -29,7 +29,7 @@ namespace MyTodoList
         private void Start()
         {
             mBtnClear.OnClickAsObservable().Subscribe(_ => mItemModel.Completed.Value = true);
-            mImgBg.OnPointerClickAsObservable().Subscribe(_ => { OnClicked.Value = true;mHightLight.enabled = true; });
+            mImgBg.OnPointerClickAsObservable().Subscribe(_ => { OnClicked.Value = true;mHightLight.enabled = true; /*Debug.Log("A" + mItemModel.Id);*/ });
         }
     }
     /// <summary>
@@ -70,8 +70,9 @@ namespace MyTodoList
                 Enable.Value = !c;//点击即使Scrollview失效 遮罩已订阅此变化 此时遮罩会开启
                 UiItem.OnClicked.Value = false;//用完标记后归位  待下次继续触发
                 mCurClickedUiId = curId;//锁定选中的item
+                //Debug.Log("B" + mCurClickedUiId);
             });
-            Enable.Where(e=>e).Subscribe(e => UiItem.CloseHighLight());//全暗！管它暗哪个
+            Enable.Where(e=>e).Subscribe(e => UiItem.CloseHighLight()).AddTo(UiItem);//全暗！管它暗哪个 ps: addTo用来绑定生命周期
 
         }
         /// <summary>
