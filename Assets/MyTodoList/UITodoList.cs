@@ -49,6 +49,7 @@ namespace MyTodoList
                     mImgEventMask.enabled = !e;
                     mBtnCancel.image.enabled = !e;
                     mIptContent.Select();
+                    mIptContent.text = "";
                 });
             //当遮罩开启时的遮罩点击事件
             mImgEventMask.OnPointerClickAsObservable().Where(_ =>mImgEventMask.enabled).Subscribe(_=>mItemsLstCtl.Enable.Value = true);

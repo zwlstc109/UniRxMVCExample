@@ -46,7 +46,7 @@ namespace MyTodoList
         private int mCurClickedUiId = -1;//当前选中的Id
         public ItemsListCtl(Transform root)
         {
-            mItemPrf = Resources.Load<GameObject>("prfTodoItem");//加载预制体
+            mItemPrf = Resources.Load<GameObject>("prfTodoItem");//加载预制体文件
             mItemsRoot = root;
             Enable = new BoolReactiveProperty(true);
             mItemModelLst =TodoItemCollection.Load();//初始化数据       

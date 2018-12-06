@@ -21,7 +21,7 @@ namespace  MyTodoList
         }
     }
    /// <summary>
-   /// 数据集合类，提供本地持久化
+   /// 数据集合类，有本地持久化
    /// </summary>
    [Serializable]
     public class TodoItemCollection
