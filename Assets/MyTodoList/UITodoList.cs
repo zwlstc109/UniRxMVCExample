@@ -37,20 +37,22 @@ namespace MyTodoList
                 });
             //确认按钮点击事件源
             var btnSure = mBtnSure.OnClickAsObservable();
-            //btnSure事件源 将被此条件[遮罩enable==false] 过滤      非修改模式下 添加待办事项
+            //btnSure事件源 将被此条件[遮罩enable==false] 过滤      非修改模式下 添加待办事项（仅用列表控制器的Enable来代表是否修改模式）
             btnSure.Where(_=> !mImgEventMask.enabled).Subscribe(_ => mItemsLstCtl.AddUIItem(mIptContent.text));
             //btnSure事件源 将被此条件[遮罩enable==true] 过滤       修改模式下 修改当前选中的待办事项 （当前选中逻辑由列表控制器负责）
             btnSure.Where(_ => mImgEventMask.enabled).Subscribe(_ => mItemsLstCtl.ModifyUIItem(mIptContent.text));        
             //列表控制器的一个reactive属性 可以订阅此属性的变化 该值表达了当前scrollview能否被选中
             var itemsLstEnable = mItemsLstCtl.Enable;
-            //让遮罩订阅这个值，跟随一起变化
-            itemsLstEnable.Subscribe(
-                e => {
-                    mImgEventMask.enabled = !e;
-                    mBtnCancel.image.enabled = !e;
-                    mIptContent.Select();
-                    mIptContent.text = "";
-                });
+            //订阅Enable的变化，跟随一起变化
+            itemsLstEnable.Subscribe(e => mImgEventMask.enabled = !e);
+            //输入框为空时，联动取消按钮和enable （这个where不好解释，直接联动的话，当输入框中有文字时，Enable为false 取消按钮就没了 也就无法清空文字了）
+            itemsLstEnable.Where(_=>string.IsNullOrEmpty(mIptContent.text)). Subscribe(e=>mBtnCancel.image.enabled = !e);
+            //订阅Enable的变true
+            itemsLstEnable.Where(e => !e).Subscribe(_ =>
+            {
+                mIptContent.Select();
+                mIptContent.text = mItemsLstCtl.GetCurUIContent();
+            });
             //当遮罩开启时的遮罩点击事件
             mImgEventMask.OnPointerClickAsObservable().Where(_ =>mImgEventMask.enabled).Subscribe(_=>mItemsLstCtl.Enable.Value = true);
          

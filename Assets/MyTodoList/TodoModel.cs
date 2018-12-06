@@ -93,9 +93,24 @@ namespace  MyTodoList
             }
 
         }
-
         /// <summary>
-        /// 逐个访问接口
+        /// 查
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public string GetItemContent(int id)
+        {
+            foreach (var item in mItemsLst)
+            {
+                if (item.Id == id)
+                {
+                    return item.Content.Value;
+                }
+            }
+            return null;
+        }
+        /// <summary>
+        /// 逐个访问
         /// </summary>
         /// <param name="handler"></param>
         public void ForEach(Action<TodoItem> handler)

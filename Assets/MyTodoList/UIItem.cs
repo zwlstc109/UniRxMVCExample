@@ -43,7 +43,7 @@ namespace MyTodoList
         private TodoItemCollection mItemModelLst;//数据集合
         //private List<UIItem> mUIItemsLst;
         public BoolReactiveProperty Enable;
-        private int mCurClickedUiId = -1;//当前选中的Id
+        public int mCurClickedUiId=-1;//当前选中的Id
         public ItemsListCtl(Transform root)
         {
             mItemPrf = Resources.Load<GameObject>("prfTodoItem");//加载预制体文件
@@ -67,9 +67,9 @@ namespace MyTodoList
             UiItem.SetItemModel(itemModel);
             UiItem.OnClicked.Where(c=>c).Subscribe(c =>
             {
-                Enable.Value = !c;//点击即使Scrollview失效 遮罩已订阅此变化 此时遮罩会开启
-                UiItem.OnClicked.Value = false;//用完标记后归位  待下次继续触发
                 mCurClickedUiId = curId;//锁定选中的item
+                Enable.Value = !c;//点击使Scrollview失效 遮罩已订阅此变化 此时遮罩会开启
+                UiItem.OnClicked.Value = false;//用完标记后归位  待下次继续触发             
                 //Debug.Log("B" + mCurClickedUiId);
             });
             Enable.Where(e=>e).Subscribe(e => UiItem.CloseHighLight()).AddTo(UiItem);//全暗！管它暗哪个 ps: addTo用来绑定生命周期
@@ -90,6 +90,15 @@ namespace MyTodoList
         public void ModifyUIItem(string content)
         {
             mItemModelLst.ModifyItem(mCurClickedUiId, content);
+        }
+        /// <summary>
+        /// 拿取uiItem的内容
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public string GetCurUIContent()
+        {
+            return mItemModelLst.GetItemContent(mCurClickedUiId);
         }
        
 
