@@ -33,8 +33,8 @@ namespace UniRxOutLine
             #endregion
             #region UniRx
             ReactiveProperty<int> rpInt = new ReactiveProperty<int>(0);
-            rpInt.GroupBy(i => (i & 1) == 1 ? "奇数" : "偶数")
-                .Subscribe(group=>group.Subscribe(i=>Debug.LogFormat("{0}:{1}",group.Key,i)));//groupby 需要一个selector作为groupKey的类型
+            rpInt.GroupBy(i => (i & 1) == 1 ? "奇数" : "偶数")//groupby 需要一个selector作为groupKey 这个操作可以理解为把每个接受到的发射都有一个自定义标记 （不同于linq版需要完整序列）
+                .Subscribe(group=>group.Subscribe(i=>Debug.LogFormat("{0}:{1}",group.Key,i)));
             rpInt.Value = 1;
             rpInt.Value = 2;
             rpInt.Value = 3;
