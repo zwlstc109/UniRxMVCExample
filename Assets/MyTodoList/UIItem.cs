@@ -61,7 +61,7 @@ namespace MyTodoList
             var curId = itemModel.Id; 
             itemModel.Completed.Where(c => c).Subscribe(_ => {//只要这个数据的completed变成了false 就销毁数据和ui
                 mItemModelLst.RemoveItem(curId);
-                GameObject.Destroy(UiItem.gameObject);
+                Object.Destroy(UiItem.gameObject);
     
             });
             UiItem.SetItemModel(itemModel);
