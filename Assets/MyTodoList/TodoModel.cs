@@ -9,14 +9,14 @@ namespace  MyTodoList
     public class TodoItem
     {
         public StringReactiveProperty Content;
-        public BoolReactiveProperty Completed;
+        //public BoolReactiveProperty Completed;
         public int Id;//数据的标识 是必须的 否则当它处在一个集合中时怎么找到它呢...
         public TodoItem() { }
 
         public TodoItem(string content,int id)
         {
             Content = new StringReactiveProperty(content);
-            Completed = new BoolReactiveProperty(false);
+            //Completed = new BoolReactiveProperty(false);
             Id = id;
         }
     }

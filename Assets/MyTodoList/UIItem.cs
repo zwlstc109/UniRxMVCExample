@@ -22,57 +22,49 @@ namespace MyTodoList
         public IObservable<int> UIItemClearOnClicked;
         public void SetItemModel(TodoItem model)//提供设置数据的接口 
         {
-            mItemModel = model;
-            mItemModel.Content.Subscribe(str => mTxtContent.text = str);//ui关联数据    
-            //mBtnClear.OnClickAsObservable().Subscribe(_ => mItemModel.Completed.Value = true);
-        
+            mItemModel = model;                                                             
+            mItemModel.Content.SubscribeToText(mTxtContent); //ui关联数据   
         }
-        public void CloseHighLight() { mHightLight.enabled = false; }//关闭高亮接口
+       
         private void Awake()
         {
             UIItemClearOnClicked = mBtnClear.OnClickAsObservable().Select(_ => mItemModel.Id);
             UIItemBgOnClicked = mImgBg.OnPointerClickAsObservable().Select(_ =>mItemModel.Id);
-            UIItemBgOnClicked.Subscribe(_ => mHightLight.enabled = true);
+            UIItemBgOnClicked.Subscribe(_ => 
+            {
+                RPLink.GetRp(RPLink.EventMaskEnable).Value = true;//修改全局rp，以通知他处
+                mHightLight.enabled = true;
+            });                                    //变false
+            RPLink.GetRp(RPLink.EventMaskEnable).Where(e => !e).Subscribe(e =>mHightLight.enabled=false).AddTo(this);//订阅全局rp
         }
     }
     /// <summary>
-    /// UIItem 集合的封装  (Controller的Controller)
+    /// UIItems 的封装  (Controller的Controller)
     /// </summary>
     public class ItemsListCtl
-    {
-      
+    {    
         private Transform mItemsRoot;//scrollView的content节点
         private GameObject mItemPrf;//uiItem预制体
-        private TodoItemCollection mItemModelLst;//数据集合
-        //private List<UIItem> mUIItemsLst;
-        public BoolReactiveProperty Enable;
+        private TodoItemCollection mItemModelLst;//数据集合         
         public int mCurClickedUiId=-1;//当前选中的Id
         public ItemsListCtl(Transform root)
         {
             mItemPrf = Resources.Load<GameObject>("prfTodoItem");//加载预制体文件
             mItemsRoot = root;
-            Enable = new BoolReactiveProperty(true);
             mItemModelLst =TodoItemCollection.Load();//初始化数据       
-            mItemModelLst.ForEach(item =>AddUIItem(item));
-       
+            mItemModelLst.ForEach(item =>AddUIItem(item));      
         }
 
         private void AddUIItem(TodoItem itemModel)
         {
             var UiItem = Object.Instantiate(mItemPrf).GetComponent<UIItem>();//实例化UIprefab
             UiItem.transform.SetParent(mItemsRoot, false);
-            UiItem.SetItemModel(itemModel);
+            UiItem.SetItemModel(itemModel);//给uiItem数据
             UiItem.UIItemClearOnClicked.Subscribe(id => {
                 mItemModelLst.RemoveItem(id);
                 Object.Destroy(UiItem.gameObject);
             });
-            UiItem.UIItemBgOnClicked.Subscribe(id =>{
-                mCurClickedUiId = id;//锁定选中的item
-                Enable.Value = false;//点击使Scrollview失效 遮罩已订阅此变化 此时遮罩会开启             
-                //Debug.Log("B" + mCurClickedUiId);
-            });
-            Enable.Where(e=>e).Subscribe(e => UiItem.CloseHighLight()).AddTo(UiItem);//全暗！管它暗哪个 ps: addTo用来绑定生命周期
-
+            UiItem.UIItemBgOnClicked.Subscribe(id => mCurClickedUiId = id);       
         }
         /// <summary>
         /// 给高层调用的添加待办事项接口

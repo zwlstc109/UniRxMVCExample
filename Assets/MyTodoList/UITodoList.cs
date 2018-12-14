@@ -26,57 +26,60 @@ namespace MyTodoList
         private void Awake()
         {
             mItemsLstCtl = new ItemsListCtl(mItemsRoot);
+            RPLink.GetRp(RPLink.EventMaskEnable).Value = false;//一个全局的reactiveProperty 用来表示遮罩的enable
         }
         private void Start()
         {
-            //把输入框传来的值转化成一个bool值 关联 按钮 的开关  输入框不空就启用相关按钮
-            var iptChanged = mIptContent.OnValueChangedAsObservable().Select(str => string.IsNullOrEmpty(str));
-            iptChanged.Subscribe(emptyIpt => mBtnSure.interactable = !emptyIpt);
-            iptChanged.Subscribe(emptyIpt => {
-                if (!emptyIpt)
-                    mBtnCancel.image.enabled = true;
-                else if (mItemsLstCtl.Enable.Value)
+            //把输入框是否为空转化成一个bool值 关联 按钮 的禁用显示
+            mIptContent.OnValueChangedAsObservable().Select(str => string.IsNullOrEmpty(str)).Subscribe(
+                emptyIpt =>
+                {
+                    mBtnSure.interactable = !emptyIpt;
+                    if (!emptyIpt)
+                        mBtnCancel.image.enabled = true;
+                    else if (!mImgEventMask.enabled)
+                        mBtnCancel.image.enabled = false;
+                });
+
+            //确认按钮点击
+            mBtnSure.OnClickAsObservable().Subscribe(
+                _ =>
+                {
+                    if (!mImgEventMask.enabled) //非修改模式下 添加待办事项（仅用遮罩得enable来代表是否修改模式）
+                        mItemsLstCtl.AddUIItem(mIptContent.text);
+                    else // 修改模式下 修改当前选中的待办事项 （当前选中逻辑由列表控制器负责）
+                       mItemsLstCtl.ModifyUIItem(mIptContent.text);
+                    //重置一切
+                    mIptContent.text = "";
                     mBtnCancel.image.enabled = false;
-            });
-            //mBtnCancel.image.enabled = !emptyIpt;
-            //确认按钮点击事件源
-            var btnSure = mBtnSure.OnClickAsObservable();
-            //btnSure事件源 将被此条件[遮罩enable==false] 过滤      非修改模式下 添加待办事项（仅用遮罩得enable来代表是否修改模式）
-            btnSure.Where(_=> !mImgEventMask.enabled).Subscribe(_ => mItemsLstCtl.AddUIItem(mIptContent.text));
-            //btnSure事件源 将被此条件[遮罩enable==true] 过滤       修改模式下 修改当前选中的待办事项 （当前选中逻辑由列表控制器负责）
-            btnSure.Where(_ => mImgEventMask.enabled).Subscribe(_ => mItemsLstCtl.ModifyUIItem(mIptContent.text));
-            btnSure.Subscribe(_ => { mIptContent.text = ""; mItemsLstCtl.Enable.Value = true; });
-            //列表控制器的一个reactive属性 可以订阅此属性的变化 该值表达了当前scrollview能否被选中
-            var itemsLstEnable = mItemsLstCtl.Enable;
-            //订阅列表控制器Enable的变化，联动遮罩的enable
-            itemsLstEnable.Subscribe(e => mImgEventMask.enabled = !e);
-            //输入框为空时，联动取消按钮和enable （这个where不好解释，直接联动的话，当输入框中有文字时，Enable为false 取消按钮就没了 也就无法清空文字了）
-            //itemsLstEnable./*Where(_ => string.IsNullOrEmpty(mIptContent.text)).*/Subscribe(e => mBtnCancel.image.enabled = !e);
-            //订阅Enable的变false
-            itemsLstEnable.Where(e => !e).Subscribe(_ => {
-                mIptContent.Select();
-                mIptContent.text = mItemsLstCtl.GetCurUIContent();
-            });
-            //当遮罩开启时的遮罩点击事件
-            mImgEventMask.OnPointerClickAsObservable().Where(_ =>mImgEventMask.enabled).Subscribe(_=>mItemsLstCtl.Enable.Value = true);
+                    RPLink.GetRp(RPLink.EventMaskEnable).Value = false;
+                });
+             //订阅一个全局的reaciveProperty(全局可修改可订阅) 他在此处用来关联遮罩的开启与否
+             RPLink.GetRp(RPLink.EventMaskEnable).Subscribe(
+                enabled =>
+                {   
+                    mImgEventMask.enabled = enabled;//直接关联遮罩的enable
+                    if (enabled)//如果从false变成了true
+                    {
+                        mIptContent.Select();
+                        mIptContent.text = mItemsLstCtl.GetCurUIContent();
+                    }
+                });
+            
+            //遮罩开启时才有的点击事件
+            mImgEventMask.OnPointerClickAsObservable().Subscribe(_ => RPLink.GetRp(RPLink.EventMaskEnable).Value = false);
+            //取消输入按钮
             mBtnCancel.OnClickAsObservable().Subscribe(_ =>
             {
                 if (mIptContent.text == "")
                 {
-                    mItemsLstCtl.Enable.Value = true;
+                    RPLink.GetRp(RPLink.EventMaskEnable).Value = false;
                     mBtnCancel.image.enabled = false;
                 }
                 else
                     mIptContent.text = "";
             });
 
-       
-
         }
-        private void Update()
-        {
-            //print(mIptContent.isFocused);
-        }
-
     }
 }
