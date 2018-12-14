@@ -1,0 +1,12 @@
+一般来说，observable 都需要缓存一个fun<Iobserver<T>,IDisposible>的函数  用来决定subscribe时的行为（包括返回一个注销器） 例如CreateObservable
+而有些Obserable 不需要缓存这个是因为 注册时候的逻辑是固定的 所以不需要observable创建者提供自定义的注册行为 例如RangeObservable
+
+关于有些observable继承的一个基类:OperatorObservableBase
+是提供外界subscribe的模板方法 具体的注册实现交由子类的SubscribeCore完成 
+传递的参数一个是当前要注册的observer和一个注销器引用，subscribeCore会返回这个注销器
+并由模板方法返回给高层调用者
+这个模板方法还指定了注销器的类型SingleAssignmentDisposable  
+ 
+有些observer继承的一个基类:OperatorObserverBase
+这个类主要是对server进行一个封装 使其在调用oncomplete的时候 自动调用dispose
+并在异常时能够捕获异常 因此需要缓存一个注销手柄 这也是subscribeCore需要注销器的原因

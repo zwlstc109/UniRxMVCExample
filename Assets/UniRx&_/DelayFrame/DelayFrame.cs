@@ -14,15 +14,16 @@ namespace UniRxOutLine
         {
             //DelayFrame 延迟n帧执行
 
-            
+
             print(Time.frameCount);//时间戳（帧）
             Observable.ReturnUnit()
                 .Do(_ => print(Time.frameCount))
                 .DelayFrame(10)
                 .Do(_ => print(Time.frameCount))
                 .Subscribe(_ => print(Time.frameCount));
-          
-         //确实有点问题 写了10帧 他却延迟了11帧  
+
+            //确实有点问题 写了10帧 他却延迟了11帧  
+
         }
       
     }

@@ -12,7 +12,7 @@ namespace UniRxOutLine
         void Start()
         {
 
-            //StartWith  在obs之前手动添加一些参数...或者添加一个可枚举序列...不会用...
+            //StartWith  在obs之前预装填一些炮弹...或者添加一个可枚举序列...不会用...
             var s1 = Observable.EveryUpdate().Where(_ => Input.GetMouseButtonDown(0));
           
 

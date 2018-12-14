@@ -13,6 +13,7 @@ namespace UniRxOutLine
         void Start()
         {
             //Delay  对每个发射延迟接收 
+            //阅读源码后 的理解是 每个onNext的回调执行都被调度器延迟发送了
 
             //单击后 延迟1秒 接收  
             Observable.EveryUpdate().Where(_ => Input.GetMouseButtonDown(0))

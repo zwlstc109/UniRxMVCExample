@@ -34,4 +34,6 @@ namespace UniRxOutLine
             #endregion
         }
     }
+    //阅读源码后 发现此类操作符的实现 其实就是帮你在onNext里要做的判断过滤 放在where里做了  方式是通过新造了一个新的whereObserver
+    //同时自己也会被装饰成whereObservable 装饰模式
 }   //能写成表达式的会写成表达式 后面有些不能的 用链式展示

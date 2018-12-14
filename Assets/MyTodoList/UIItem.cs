@@ -16,20 +16,23 @@ namespace MyTodoList
         [SerializeField] private Button mBtnClear;
         [SerializeField] private Image mImgBg;
         [SerializeField] public Image mHightLight;
-      
-        public TodoItem mItemModel; //再强调一遍, UI类已经被当作Controller了 持有数据一点也没有问题
-        public ReactiveProperty<bool> OnClicked;//点击标记 
+
+        public TodoItem mItemModel; //再强调一遍, UI类已经被当作Controller了 持有数据一点也没有问题     
+        public IObservable<int> UIItemBgOnClicked;
+        public IObservable<int> UIItemClearOnClicked;
         public void SetItemModel(TodoItem model)//提供设置数据的接口 
         {
             mItemModel = model;
-            mItemModel.Content.Subscribe(str => mTxtContent.text = str);//ui关联数据
-            OnClicked = new ReactiveProperty<bool>(false);//初始化
+            mItemModel.Content.Subscribe(str => mTxtContent.text = str);//ui关联数据    
+            //mBtnClear.OnClickAsObservable().Subscribe(_ => mItemModel.Completed.Value = true);
+        
         }
         public void CloseHighLight() { mHightLight.enabled = false; }//关闭高亮接口
-        private void Start()
+        private void Awake()
         {
-            mBtnClear.OnClickAsObservable().Subscribe(_ => mItemModel.Completed.Value = true);
-            mImgBg.OnPointerClickAsObservable().Subscribe(_ => { OnClicked.Value = true;mHightLight.enabled = true; /*Debug.Log("A" + mItemModel.Id);*/ });
+            UIItemClearOnClicked = mBtnClear.OnClickAsObservable().Select(_ => mItemModel.Id);
+            UIItemBgOnClicked = mImgBg.OnPointerClickAsObservable().Select(_ =>mItemModel.Id);
+            UIItemBgOnClicked.Subscribe(_ => mHightLight.enabled = true);
         }
     }
     /// <summary>
@@ -58,18 +61,14 @@ namespace MyTodoList
         {
             var UiItem = Object.Instantiate(mItemPrf).GetComponent<UIItem>();//实例化UIprefab
             UiItem.transform.SetParent(mItemsRoot, false);
-            var curId = itemModel.Id; 
-            itemModel.Completed.Where(c => c).Subscribe(_ => {//只要这个数据的completed变成了false 就销毁数据和ui
-                mItemModelLst.RemoveItem(curId);
-                Object.Destroy(UiItem.gameObject);
-    
-            });
             UiItem.SetItemModel(itemModel);
-            UiItem.OnClicked.Where(c=>c).Subscribe(c =>
-            {
-                mCurClickedUiId = curId;//锁定选中的item
-                Enable.Value = !c;//点击使Scrollview失效 遮罩已订阅此变化 此时遮罩会开启
-                UiItem.OnClicked.Value = false;//用完标记后归位  待下次继续触发             
+            UiItem.UIItemClearOnClicked.Subscribe(id => {
+                mItemModelLst.RemoveItem(id);
+                Object.Destroy(UiItem.gameObject);
+            });
+            UiItem.UIItemBgOnClicked.Subscribe(id =>{
+                mCurClickedUiId = id;//锁定选中的item
+                Enable.Value = false;//点击使Scrollview失效 遮罩已订阅此变化 此时遮罩会开启             
                 //Debug.Log("B" + mCurClickedUiId);
             });
             Enable.Where(e=>e).Subscribe(e => UiItem.CloseHighLight()).AddTo(UiItem);//全暗！管它暗哪个 ps: addTo用来绑定生命周期
