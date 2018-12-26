@@ -64,6 +64,11 @@ namespace MyTodoList
                         mIptContent.Select();
                         mIptContent.text = mItemsLstCtl.GetCurUIContent();
                     }
+                    else
+                    {
+                        mIptContent.text = "";
+                        mBtnCancel.image.enabled = false;
+                    }
                 });
             
             //遮罩开启时才有的点击事件

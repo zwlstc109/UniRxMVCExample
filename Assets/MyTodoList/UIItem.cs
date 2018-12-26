@@ -32,7 +32,7 @@ namespace MyTodoList
             UIItemBgOnClicked = mImgBg.OnPointerClickAsObservable().Select(_ =>mItemModel.Id);
             UIItemBgOnClicked.Subscribe(_ => 
             {
-                RPLink.GetRp(RPLink.EventMaskEnable).Value = true;//修改全局rp，以通知他处
+               
                 mHightLight.enabled = true;
             });                                    //变false
             RPLink.GetRp(RPLink.EventMaskEnable).Where(e => !e).Subscribe(e =>mHightLight.enabled=false).AddTo(this);//订阅全局rp
@@ -60,11 +60,16 @@ namespace MyTodoList
             var UiItem = Object.Instantiate(mItemPrf).GetComponent<UIItem>();//实例化UIprefab
             UiItem.transform.SetParent(mItemsRoot, false);
             UiItem.SetItemModel(itemModel);//给uiItem数据
-            UiItem.UIItemClearOnClicked.Subscribe(id => {
+            UiItem.UIItemClearOnClicked.Subscribe(id =>
+            {
                 mItemModelLst.RemoveItem(id);
                 Object.Destroy(UiItem.gameObject);
             });
-            UiItem.UIItemBgOnClicked.Subscribe(id => mCurClickedUiId = id);       
+            UiItem.UIItemBgOnClicked.Subscribe(id =>
+            {
+                mCurClickedUiId = id;
+                RPLink.GetRp(RPLink.EventMaskEnable).Value = true;//修改全局rp，以通知他处 
+            });
         }
         /// <summary>
         /// 给高层调用的添加待办事项接口
